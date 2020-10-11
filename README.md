@@ -20,7 +20,7 @@ Generate Class UnitTest
 
 
 3.add existing project
-![alt text](https://github.com/missfair/GenerateUnitTest/blob/master/GenerateUnitTest/GenerateTestMethodPicture/2_2_add_existing_project.PNG)
+![alt text](https://github.com/missfair/GenerateUnitTest/blob/master/GenerateUnitTest/GenerateTestMethodPicture/2_2_add_existing_project.png)
 
 
 
@@ -29,7 +29,7 @@ Generate Class UnitTest
 
 
 4.chose GenerateUnitTest
-![alt text](https://github.com/missfair/GenerateUnitTest/blob/master/GenerateUnitTest/GenerateTestMethodPicture/3_chose_GenerateUnitTest.PNG)
+![alt text](https://github.com/missfair/GenerateUnitTest/blob/master/GenerateUnitTest/GenerateTestMethodPicture/3_chose_GenerateUnitTest.png)
 
 
 
