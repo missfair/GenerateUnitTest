@@ -17,7 +17,7 @@ namespace GenerateUnitTest
             ClearMethodNames();
             List<string> mockInputFunctions = new List<string>();
             List<string> mockInputMethodNames = new List<string>();
-
+            int i = 0;
             foreach (var model in requestObjects)
             {
                 if (model == null)
@@ -26,8 +26,9 @@ namespace GenerateUnitTest
                 }
                 else
                 {
+                    i++;
                     TypeDetail typeDetail = GetTypeName(model);
-                    var mockInputUnitTest = GetMockInputUnitTest(methodBase, model, typeDetail);
+                    var mockInputUnitTest = GetMockInputUnitTest(model, typeDetail, i);
                     mockInputFunctions.Add(mockInputUnitTest.mockInputFunction);
                     mockInputMethodNames.Add(mockInputUnitTest.mockInputMethodName);
                 }
@@ -112,15 +113,36 @@ namespace GenerateUnitTest
             }
         }
 
-        private static (string mockInputFunction, string mockInputMethodName) GetMockInputUnitTest(MethodBase methodBase, object objects, TypeDetail typeDetail)
+        private static (string mockInputFunction, string mockInputMethodName) GetMockInputUnitTest(object objects, TypeDetail typeDetail, int i)
         {
-            string mockInputMethodName = GetMockInputMethodName(methodBase, typeDetail);
-            methodNames.Add(mockInputMethodName);
-            string codeFirstLine = GetCodeFirstLineMockInput(typeDetail, mockInputMethodName);
-            string codeSecondLine = GetCodeSecondLineMockInput(objects);
-            string codeEndLine = GetCodeEndLineMockInput(typeDetail);
-            string mockInputFunction = $"{codeFirstLine}{codeSecondLine}{Environment.NewLine}{codeEndLine}{Environment.NewLine}" + "}";
-            return (mockInputFunction, $"{mockInputMethodName}()");
+            string mockInputMethodName = string.Empty;
+            string mockInputFunction = string.Empty;
+            string fullName = objects.GetType().FullName;
+            bool isModelProject = fullName.Contains("Gringotts.Model.");
+            if (!IsList(objects) && !IsGenericList(objects) && !isModelProject)
+            {
+                mockInputMethodName = $"({typeDetail.typeName})" + objects.ToString();
+                if (typeof(bool).Name == objects.GetType().Name)
+                {
+                    mockInputMethodName = objects.ToString().ToLower();
+                }             
+                if (typeof(DateTime).Name == objects.GetType().Name)
+                {
+                    mockInputMethodName = $"Convert.ToDateTime(\"{objects.ToString()}\")";
+                }
+            }
+            else
+            {
+                string getMockMethodName = $"GetMock{i}";
+                methodNames.Add(mockInputMethodName);
+                string codeFirstLine = GetCodeFirstLineMockInput(typeDetail, getMockMethodName );
+                string codeSecondLine = GetCodeSecondLineMockInput(objects);
+                string codeEndLine = GetCodeEndLineMockInput(typeDetail);
+                mockInputFunction = $"{codeFirstLine}{codeSecondLine}{Environment.NewLine}{codeEndLine}{Environment.NewLine}" + "}";
+                mockInputMethodName = getMockMethodName + "()";
+            }
+
+            return (mockInputFunction, mockInputMethodName );
         }
 
         private static string GetMockInputMethodName(MethodBase methodBase, TypeDetail typeDetail)
