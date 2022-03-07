@@ -118,14 +118,21 @@ namespace GenerateUnitTest
             string mockInputMethodName = string.Empty;
             string mockInputFunction = string.Empty;
             string fullName = objects.GetType().FullName;
-            bool isModelProject = fullName.Contains("Gringotts.Model.");
+            bool isModelProject = fullName.Contains(".Model.") || fullName.Contains(".Models.");
             if (!IsList(objects) && !IsGenericList(objects) && !isModelProject)
             {
-                mockInputMethodName = $"({typeDetail.typeName})" + objects.ToString();
+                if (typeDetail.typeName.ToLower().Equals("string"))
+                {
+                    mockInputMethodName = objects.ToString() + ".ToString()";
+                }
+                else
+                {
+                    mockInputMethodName = $"({typeDetail.typeName})" + objects.ToString();
+                }
                 if (typeof(bool).Name == objects.GetType().Name)
                 {
                     mockInputMethodName = objects.ToString().ToLower();
-                }             
+                }
                 if (typeof(DateTime).Name == objects.GetType().Name)
                 {
                     mockInputMethodName = $"Convert.ToDateTime(\"{objects.ToString()}\")";
@@ -135,14 +142,14 @@ namespace GenerateUnitTest
             {
                 string getMockMethodName = $"GetMock{i}";
                 methodNames.Add(mockInputMethodName);
-                string codeFirstLine = GetCodeFirstLineMockInput(typeDetail, getMockMethodName );
+                string codeFirstLine = GetCodeFirstLineMockInput(typeDetail, getMockMethodName);
                 string codeSecondLine = GetCodeSecondLineMockInput(objects);
                 string codeEndLine = GetCodeEndLineMockInput(typeDetail);
                 mockInputFunction = $"{codeFirstLine}{codeSecondLine}{Environment.NewLine}{codeEndLine}{Environment.NewLine}" + "}";
                 mockInputMethodName = getMockMethodName + "()";
             }
 
-            return (mockInputFunction, mockInputMethodName );
+            return (mockInputFunction, mockInputMethodName);
         }
 
         private static string GetMockInputMethodName(MethodBase methodBase, TypeDetail typeDetail)
