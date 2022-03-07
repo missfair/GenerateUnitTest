@@ -123,7 +123,7 @@ namespace GenerateUnitTest
             {
                 if (typeDetail.typeName.ToLower().Equals("string"))
                 {
-                    mockInputMethodName = objects.ToString() + ".ToString()";
+                    mockInputMethodName = "\"" + objects.ToString() + "\"";
                 }
                 else
                 {
