@@ -1,4 +1,5 @@
-﻿using Newtonsoft.Json;
+﻿using GenerateUnitTest.Logic;
+using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,16 +11,34 @@ namespace GenerateUnitTest
     public static class GenerateUnitTestLogic
     {
         public static List<string> methodNames { get; private set; } = new List<string>();
-        //exaple
+        //example
         //var resultMockUnitTest = GenerateUnitTestLogic.GenerateTestMethod(MethodBase.GetCurrentMethod(), addOnPaymentConfigs, gracePeriodRequest);
         public static string GenerateTestMethod(this MethodBase methodBase, params object[] requestObjects)
         {
             ClearMethodNames();
             List<string> mockInputFunctions = new List<string>();
             List<string> mockInputMethodNames = new List<string>();
+            List<string> assertResults = new List<string>();
             int i = 0;
             foreach (var model in requestObjects)
             {
+                string assetResultPattern = string.Empty;
+
+                    string returnTypeName = ((MethodInfo)methodBase).ReturnType.Name;
+                    string modelTypeName = model.GetType().Name;
+                if (i == requestObjects.Length - 1 && returnTypeName.Equals(modelTypeName))
+                {
+                    try
+                    {
+                        assetResultPattern = PostmanLogic.WrtieMockRegression(model).ToString();
+                        assertResults.Add(assetResultPattern);
+                    }
+                    catch (Exception)
+                    {
+                        continue;
+                    }
+                    continue;
+                }
                 if (model == null)
                 {
                     mockInputMethodNames.Add(null);
@@ -36,6 +55,7 @@ namespace GenerateUnitTest
             }
             string mockInputFunction = string.Join(Environment.NewLine, mockInputFunctions);
             string codeMockCallFunction = GetTestMethod(methodBase, mockInputMethodNames);
+            codeMockCallFunction = codeMockCallFunction + Environment.NewLine + (string.Join(Environment.NewLine, assertResults));
             string resultCodeMock = $"{mockInputFunction}{Environment.NewLine}{GetTestMethodPattern(methodBase, codeMockCallFunction)}";
             return resultCodeMock;
         }
