@@ -3,6 +3,7 @@ using Newtonsoft.Json;
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 
@@ -13,8 +14,11 @@ namespace GenerateUnitTest
         public static List<string> methodNames { get; private set; } = new List<string>();
         //example
         //var resultMockUnitTest = GenerateUnitTestLogic.GenerateTestMethod(MethodBase.GetCurrentMethod(), addOnPaymentConfigs, gracePeriodRequest);
-        public static string GenerateTestMethod(this MethodBase methodBase, params object[] requestObjects)
+        public static string GenerateTestMethod(params object[] requestObjects)
         {
+            StackTrace stackTrace = new StackTrace();
+            MethodBase methodBase = stackTrace.GetFrame(1).GetMethod();
+
             ClearMethodNames();
             List<string> mockInputFunctions = new List<string>();
             List<string> mockInputMethodNames = new List<string>();
@@ -23,14 +27,13 @@ namespace GenerateUnitTest
             foreach (var model in requestObjects)
             {
                 string assetResultPattern = string.Empty;
-
-                    string returnTypeName = ((MethodInfo)methodBase).ReturnType.Name;
-                    string modelTypeName = model.GetType().Name;
+                string returnTypeName = ((MethodInfo)methodBase).ReturnType.Name;
+                string modelTypeName = model.GetType().Name;
                 if (i == requestObjects.Length - 1 && returnTypeName.Equals(modelTypeName))
                 {
                     try
                     {
-                        assetResultPattern = PostmanLogic.WrtieMockRegression(model).ToString();
+                        assetResultPattern = RootObjectLogic.MapRootAssertExpect(model).ToString();
                         assertResults.Add(assetResultPattern);
                     }
                     catch (Exception)

@@ -6,9 +6,9 @@ using System.Linq;
 
 namespace GenerateUnitTest.Logic
 {
-    public static class PostmanLogic
+    public static class RootObjectLogic
     {
-        public static object WrtieMockRegression(this object request)
+        public static object MapRootAssertExpect(this object request)
         {
             string resultScripts = string.Empty;
             List<string> listExpectScripts = new List<string>();
@@ -41,9 +41,8 @@ namespace GenerateUnitTest.Logic
                 }
             }
 
-            int index = 0;
-            //string pattern = "pm.expect(result[Index].ChildrenPath).to.eql(Value);";
-            string pattern = "Assert.AreEqual(result[Index].ChildrenPath, \"Value\");";
+            int inputNumber = 0;
+            string pattern = "Assert.AreEqual(result[Index].ChildrenPath, \"{expectValue}\");";
 
             foreach (var jos in jObjs)
             {
@@ -53,22 +52,22 @@ namespace GenerateUnitTest.Logic
                     JToken jResponse = jos[item.Key];
                     if (isArrayObj)
                     {
-                        script = pattern.Replace("Index", index.ToString());
+                        script = pattern.Replace("Index", inputNumber.ToString());
                     }
                     else
                     {
                         script = pattern.Replace("[Index]", string.Empty);
                     }
-                    List<string> resultMaps = MapMockRegression(jResponse, script).Where(a => !string.IsNullOrEmpty(a)).ToList();
+                    List<string> resultMaps = MapAssertExpect(jResponse, script).Where(a => !string.IsNullOrEmpty(a)).ToList();
                     listExpectScripts.AddRange(resultMaps);
                 }
-                index++;
+                inputNumber++;
             }
-            resultScripts = string.Join(Environment.NewLine, listExpectScripts).Replace(Environment.NewLine+ Environment.NewLine, Environment.NewLine);
-            return /*"var jsonData = pm.response.json();" + Environment.NewLine +*/ resultScripts;
+            resultScripts = string.Join(Environment.NewLine, listExpectScripts).Replace(Environment.NewLine + Environment.NewLine, Environment.NewLine);
+            return  resultScripts;
         }
 
-        private static List<string> MapMockRegression(JToken jToken, string script)
+        private static List<string> MapAssertExpect(JToken jToken, string script)
         {
             List<string> scripts = new List<string>();
             var childObjs = jToken.Children().ToList();
@@ -76,7 +75,7 @@ namespace GenerateUnitTest.Logic
             {
                 foreach (var children in childObjs)
                 {
-                    scripts.AddRange(MapMockRegression(children, script));
+                    scripts.AddRange(MapAssertExpect(children, script));
                 }
             }
             else if (childObjs.Count == 1)
@@ -94,7 +93,7 @@ namespace GenerateUnitTest.Logic
                     var childObjxx = childObj.Children().ToList();
                     foreach (var item in childObjxx)
                     {
-                        scripts.AddRange(MapMockRegression(item, script));
+                        scripts.AddRange(MapAssertExpect(item, script));
                         byPass = true;
                     }
                 }
@@ -123,9 +122,12 @@ namespace GenerateUnitTest.Logic
 
         public static string mapExpectScript(string script, string path, string value)
         {
-            //string expectPattern = @"pm.test( " + "\"Path is Value\"" + ", function () { Expect});";
-            string expectScript = script.Replace("ChildrenPath", path /*+ ".toString()").Replace("Value", "'" + value + "'"*/);
-            //expectScript = expectPattern.Replace("Path", path).Replace("Value", value).Replace("Expect", Environment.NewLine + "   " + expectScript + Environment.NewLine);
+            string expectScript = script.Replace("ChildrenPath", path);
+            bool isNewLineOnText = value.Contains(Environment.NewLine) || value.Contains("\n");
+            if (!isNewLineOnText)
+            {
+                expectScript = expectScript.Replace("{expectValue}", value);
+            }
             return expectScript;
         }
         public static string convertFormat(string value)
