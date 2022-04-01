@@ -13,7 +13,7 @@ namespace GenerateUnitTest
     {
         public static List<string> methodNames { get; private set; } = new List<string>();
         //example
-        //var resultMockUnitTest = GenerateUnitTestLogic.GenerateTestMethod(MethodBase.GetCurrentMethod(), addOnPaymentConfigs, gracePeriodRequest);
+        //var resultMockUnitTest = GenerateUnitTestLogic.GenerateTestMethod(request1, request2 , ... , response);
         public static string GenerateTestMethod(params object[] requestObjects)
         {
             StackTrace stackTrace = new StackTrace();
